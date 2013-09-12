@@ -26,7 +26,7 @@ namespace VirtualizedListSample
             }
         }
 
-        private DNQ.VirtualizedItemsSource.VirtualizedItemSource<DemoItem> _virtualizedAuditEventsSource;
+        private DNQ.VirtualizedItemsSource.VirtualizedItemSource<DemoItem> _virtualizedItemsSource;
         private ListItemCache listItemsCache;
 
         public frmMain()
@@ -41,15 +41,16 @@ namespace VirtualizedListSample
 
         void frmMain_Load(object sender, EventArgs e)
         {
-            _virtualizedAuditEventsSource = new DNQ.VirtualizedItemsSource.VirtualizedItemSource<DemoItem>(500, CountItems, RetrieveItems, LogVirtualizedListMessages);
-            _virtualizedAuditEventsSource.SourceReinitialized += VirtualizedAuditEventsSource_SourceReinitialized;
-            _virtualizedAuditEventsSource.NotifyRepositionRequired += VirtualizedAuditEventsSource_NotifyRepositionRequired;
-            _virtualizedAuditEventsSource.SourceRepositioned += VirtualizedAuditEventsSource_SourceRepositioned;
-            _virtualizedAuditEventsSource.NotifyErrorOccured += VirtualizedAuditEventsSource_NotifyErrorOccured;
+            _virtualizedItemsSource = new DNQ.VirtualizedItemsSource.VirtualizedItemSource<DemoItem>(500, CountItems, RetrieveItems, LogVirtualizedListMessages);
+            _virtualizedItemsSource.SourceReinitialized += VirtualizedAuditEventsSource_SourceReinitialized;
+            _virtualizedItemsSource.NotifyRepositionRequired += VirtualizedAuditEventsSource_NotifyRepositionRequired;
+            _virtualizedItemsSource.SourceRepositioned += VirtualizedAuditEventsSource_SourceRepositioned;
+            _virtualizedItemsSource.NotifyErrorOccured += VirtualizedAuditEventsSource_NotifyErrorOccured;
 
             listItemsCache = new ListItemCache();
 
             lstItems.RetrieveVirtualItem += lstItems_RetrieveVirtualItem;
+            lstItems.DoubleClick += lstItems_DoubleClick;
 
             DisableUI();
 
@@ -61,7 +62,7 @@ namespace VirtualizedListSample
 
                 try
                 {
-                    _virtualizedAuditEventsSource.ReinitializeSource(-1);
+                    _virtualizedItemsSource.ReinitializeSource(-1);
                 }
                 catch (Exception exc)
                 {
@@ -84,6 +85,7 @@ namespace VirtualizedListSample
         private volatile int _delay = 50;
         private IEnumerable<DemoItem> RetrieveItems(int offset, int count, System.Threading.CancellationToken cancellationToken)
         {            
+            // simulate a long-running operation such as querying a database
             var lst = new List<DemoItem>();
 
             Thread.Sleep(_delay);
@@ -95,6 +97,8 @@ namespace VirtualizedListSample
                 if (cancellationToken.IsCancellationRequested)
                     break;
             }
+
+            // and retrieve the requested list of items for the virtualized items source
             return lst;
         }
 
@@ -167,7 +171,7 @@ namespace VirtualizedListSample
 
             if (e.StoredException == null)
             {
-                tsStatusLabel.Text = string.Format("{0} records loaded in {1:0.000} seconds", _virtualizedAuditEventsSource.TotalCount, Math.Round(e.Duration.TotalSeconds, 3));
+                tsStatusLabel.Text = string.Format("{0} records loaded in {1:0.000} seconds", _virtualizedItemsSource.TotalCount, Math.Round(e.Duration.TotalSeconds, 3));
                 lstItems.VirtualListSize = e.Size;
             }
             else
@@ -202,7 +206,7 @@ namespace VirtualizedListSample
             if (item == null)
             {
                 DemoItem demoItem = null;
-                if (_virtualizedAuditEventsSource.GetItem(e.ItemIndex, out demoItem))
+                if (_virtualizedItemsSource.GetItem(e.ItemIndex, out demoItem))
                 {
                     item = MakeListItem(demoItem);
 
@@ -211,12 +215,32 @@ namespace VirtualizedListSample
                 else
                 {
                     // it probably means that the list size has changed..
-                    lstItems.VirtualListSize = _virtualizedAuditEventsSource.TotalCount;
+                    lstItems.VirtualListSize = _virtualizedItemsSource.TotalCount;
                     e.Item = MakeListItem(null);
                     return;
                 }
             }
             e.Item = item;
+        }
+
+        private void lstItems_DoubleClick(object sender, EventArgs e)
+        {
+            int selectedIndex = -1;
+            if (lstItems.SelectedIndices.Count > 0)
+            {
+                selectedIndex = lstItems.SelectedIndices[0];
+            }
+
+            if (selectedIndex != -1)
+            {
+                DemoItem selectedItem = null;
+                _virtualizedItemsSource.GetItem(selectedIndex, out selectedItem);
+
+                if (selectedItem != null)
+                {
+                    MessageBox.Show("You clicked on item:\r\n\r\n\t" + selectedItem.Name, "Item Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
         }
 
         private void EnableUI()

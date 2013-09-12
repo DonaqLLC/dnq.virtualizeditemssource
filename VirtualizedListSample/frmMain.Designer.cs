@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.lstItems = new System.Windows.Forms.ListView();
-            this.lblInfo = new System.Windows.Forms.Label();
             this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDetails = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lblInfo = new System.Windows.Forms.Label();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.tsStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.pnlListErrorIndicator = new System.Windows.Forms.Panel();
@@ -53,6 +53,7 @@
             this.colName,
             this.colDetails});
             this.lstItems.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstItems.FullRowSelect = true;
             this.lstItems.Location = new System.Drawing.Point(12, 62);
             this.lstItems.Name = "lstItems";
             this.lstItems.Size = new System.Drawing.Size(631, 359);
@@ -60,16 +61,6 @@
             this.lstItems.UseCompatibleStateImageBehavior = false;
             this.lstItems.View = System.Windows.Forms.View.Details;
             this.lstItems.VirtualMode = true;
-            // 
-            // lblInfo
-            // 
-            this.lblInfo.AutoSize = true;
-            this.lblInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblInfo.Location = new System.Drawing.Point(12, 9);
-            this.lblInfo.Name = "lblInfo";
-            this.lblInfo.Size = new System.Drawing.Size(529, 20);
-            this.lblInfo.TabIndex = 1;
-            this.lblInfo.Text = "Demonstrates the use of VirtualizedItemsSource with virtualized list views.";
             // 
             // colName
             // 
@@ -80,6 +71,16 @@
             // 
             this.colDetails.Text = "Details";
             this.colDetails.Width = 250;
+            // 
+            // lblInfo
+            // 
+            this.lblInfo.AutoSize = true;
+            this.lblInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblInfo.Location = new System.Drawing.Point(12, 9);
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(529, 20);
+            this.lblInfo.TabIndex = 1;
+            this.lblInfo.Text = "Demonstrates the use of VirtualizedItemsSource with virtualized list views.";
             // 
             // statusBar
             // 
