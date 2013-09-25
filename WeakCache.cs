@@ -140,7 +140,6 @@ namespace DNQ.VirtualizedItemsSource
         public void Dispose()
         {
             Dispose(true);
-
             GC.SuppressFinalize(this);
         }
 
@@ -151,27 +150,34 @@ namespace DNQ.VirtualizedItemsSource
             {
                 if (disposing)
                 {
-                    bool registeredCachesChanged = false;
-
-                    lock (_registeredCaches)
+                    try
                     {
-                        for (int idx = _registeredCaches.Count - 1; idx >= 0; idx--)
+                        bool registeredCachesChanged = false;
+
+                        lock (_registeredCaches)
                         {
-                            if (ReferenceEquals(_registeredCaches[idx].Target, this))
+                            for (int idx = _registeredCaches.Count - 1; idx >= 0; idx--)
                             {
-                                _registeredCaches.RemoveAt(idx);
-                                registeredCachesChanged = true;
-                                break;
-                            }                            
+                                if (ReferenceEquals(_registeredCaches[idx].Target, this) || _registeredCaches[idx].IsAlive == false || _registeredCaches[idx].Target == null)
+                                {
+                                    _registeredCaches.RemoveAt(idx);
+                                    registeredCachesChanged = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (registeredCachesChanged)
+                        {
+                            AdjustAutoPurgeTimer();
                         }
                     }
-
-                    if (registeredCachesChanged)
+                    catch
                     {
-                        AdjustAutoPurgeTimer();
+                        // do nothing if an exception occurs here.. we're not supposed to throw from Dispose
                     }
                 }
-                
+
                 _disposed = true;
             }
         }
@@ -284,6 +290,6 @@ namespace DNQ.VirtualizedItemsSource
             }
         }
 
-        #endregion
+        #endregion       
     }
 }

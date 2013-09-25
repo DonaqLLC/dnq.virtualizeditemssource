@@ -37,6 +37,16 @@ namespace VirtualizedListSample
             GenerateRandomDataSet(50000);
 
             Load += frmMain_Load;
+            FormClosed += frmMain_FormClosed;
+        }
+
+        void frmMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (listItemsCache != null)
+            {
+                listItemsCache.Dispose();
+                listItemsCache = null;
+            }
         }
 
         void frmMain_Load(object sender, EventArgs e)
