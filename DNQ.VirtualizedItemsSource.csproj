@@ -47,11 +47,14 @@
     <Compile Include="EventArgs\SourceReinitializedEventArgs.cs" />
     <Compile Include="IBounds.cs" />
     <Compile Include="IOperationResult.cs" />
+    <Compile Include="PurgeResult.cs" />
+    <Compile Include="WeakCache.cs" />
     <Compile Include="Operation.cs" />
     <Compile Include="Operation.OperationResult.cs" />
     <Compile Include="OperationType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualizedItemsSource.cs" />
+    <Compile Include="WeakCacheGeneric.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

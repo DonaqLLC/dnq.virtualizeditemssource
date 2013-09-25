@@ -27,7 +27,7 @@ namespace VirtualizedListSample
         }
 
         private DNQ.VirtualizedItemsSource.VirtualizedItemSource<DemoItem> _virtualizedItemsSource;
-        private ListItemCache listItemsCache;
+        private DNQ.VirtualizedItemsSource.WeakCache<int, ListViewItem> listItemsCache;
 
         public frmMain()
         {
@@ -47,7 +47,7 @@ namespace VirtualizedListSample
             _virtualizedItemsSource.SourceRepositioned += VirtualizedAuditEventsSource_SourceRepositioned;
             _virtualizedItemsSource.NotifyErrorOccured += VirtualizedAuditEventsSource_NotifyErrorOccured;
 
-            listItemsCache = new ListItemCache();
+            listItemsCache = DNQ.VirtualizedItemsSource.WeakCache.Create<int, ListViewItem>();
 
             lstItems.RetrieveVirtualItem += lstItems_RetrieveVirtualItem;
             lstItems.DoubleClick += lstItems_DoubleClick;
@@ -202,7 +202,7 @@ namespace VirtualizedListSample
 
         void lstItems_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
-            var item = listItemsCache.GetAt(e.ItemIndex);
+            var item = listItemsCache.Get(e.ItemIndex);
             if (item == null)
             {
                 DemoItem demoItem = null;
@@ -210,7 +210,7 @@ namespace VirtualizedListSample
                 {
                     item = MakeListItem(demoItem);
 
-                    listItemsCache.PutAt(e.ItemIndex, item);
+                    listItemsCache.Put(e.ItemIndex, item);
                 }
                 else
                 {
