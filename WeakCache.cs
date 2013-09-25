@@ -92,6 +92,9 @@ namespace DNQ.VirtualizedItemsSource
         /// <returns>   A <see cref="PurgeResult"/> value indicating the number of items removed, or that an error occured. </returns>
         public abstract PurgeResult Purge();
 
+        /// <summary>   Gets the time when this cache was last purged. </summary>
+        public abstract DateTimeOffset LastPurgeTime { get; }
+
         /// <summary>   Returns an enumerator that iterates through all items stored in the cache. </summary>
         /// <returns>
         /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through
@@ -271,7 +274,10 @@ namespace DNQ.VirtualizedItemsSource
                     if (wr != null && wr.IsAlive && wr.Target != null)
                     {
                         WeakCache cache = (WeakCache)wr.Target;
-                        if (cache.AutoPurgeInterval != TimeSpan.Zero)
+                        if (cache.AutoPurgeInterval != TimeSpan.Zero 
+                            && 
+                            cache.LastPurgeTime.Add(cache.AutoPurgeInterval) < DateTimeOffset.Now  // only if it's up to be purged!
+                            )
                         {
                             cache.Purge();
                         }

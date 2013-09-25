@@ -67,6 +67,10 @@ namespace DNQ.VirtualizedItemsSource
         ///             to TryEnterWriteLock(TimeSpan timoutInterval) methods. All others muse use
         ///             the <see cref="PurgeTimeout"/> member.</summary>
         private TimeSpan _purgeTimeout_INTERNAL_UNSAFE = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>   Gets or sets the maximum amount of time to wait to execute a purge command, if blocked. </summary>
+        ///
+        /// <value> The maximum purge timeout interval. </value>
         public TimeSpan PurgeTimeout
         {
             get
@@ -93,6 +97,27 @@ namespace DNQ.VirtualizedItemsSource
                     _internalLock.ExitWriteLock();
                 }
             }
+        }
+
+        /// <summary>   The time when this cache was last purged. May be used only from this class, 
+        ///             within code sections that are synchronized for multi-threaded access. All others 
+        ///             muse use the <see cref="LastPurgeTime"/> member.</summary>
+        private DateTimeOffset _timeLastPurged_INTERNAL_UNSAFE = DateTimeOffset.Now;
+
+        /// <summary>   Gets the time when this cache was last purged. </summary>
+        public override DateTimeOffset LastPurgeTime 
+        {
+            get {
+                _internalLock.EnterReadLock();
+                try
+                {
+                    return _timeLastPurged_INTERNAL_UNSAFE;
+                }
+                finally
+                {
+                    _internalLock.ExitReadLock();
+                }
+            }            
         }
 
         /// <summary>   Gets the number of elements in the cache, excluding expired ones. This operation
@@ -210,7 +235,7 @@ namespace DNQ.VirtualizedItemsSource
         {
             _internalLock.EnterUpgradeableReadLock();
             try
-            {
+            {                
                 List<KeyType> keysToRemove = new List<KeyType>();
                 foreach (KeyType key in cache.Keys)
                 {
@@ -218,11 +243,11 @@ namespace DNQ.VirtualizedItemsSource
                         keysToRemove.Add(key);
                 }
 
-                if (keysToRemove.Count > 0)
+                if (_internalLock.TryEnterWriteLock(_purgeTimeout_INTERNAL_UNSAFE))
                 {
-                    if (_internalLock.TryEnterWriteLock(_purgeTimeout_INTERNAL_UNSAFE))
+                    try
                     {
-                        try
+                        if (keysToRemove.Count > 0)
                         {
                             foreach (KeyType key in keysToRemove)
                             {
@@ -231,19 +256,20 @@ namespace DNQ.VirtualizedItemsSource
 
                             return new PurgeResult(keysToRemove.Count);
                         }
-                        finally
+                        else
                         {
-                            _internalLock.ExitWriteLock();
-                        }                        
+                            return PurgeResult.NotNeeded;
+                        }
                     }
-                    else
+                    finally
                     {
-                        return PurgeResult.ErrorTimedout;
+                        _timeLastPurged_INTERNAL_UNSAFE = DateTimeOffset.Now;
+                        _internalLock.ExitWriteLock();
                     }
                 }
                 else
                 {
-                    return PurgeResult.NotNeeded;
+                    return PurgeResult.ErrorTimedout;
                 }
             }
             finally
